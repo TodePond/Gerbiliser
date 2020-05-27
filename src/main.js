@@ -1,4 +1,6 @@
 import {HTML} from "./Habitat/Document.js"
+import {print} from "./Habitat/Console.js"
+import RealTimeBPMAnalyzer from 'realtime-bpm-analyzer';
 import "./Media/Hands.png"
 import "./Media/Stereo.png"
 import "./Media/Drum.png"
@@ -102,20 +104,61 @@ stereo.style.bottom = 0
 stereo.style.height = "30%"
 document.body.appendChild(stereo)
 
-const player = HTML `<audio id="player" controls></audio>`
+/*const player = HTML `<audio id="player" controls></audio>`
 player.style.position = "fixed"
-document.body.appendChild(player)
+document.body.appendChild(player)*/
+
+let stereoInit = false
+const tempos = []
+let stereoTempo = undefined
+let stereoDiff = NaN
 
 stereo.addEventListener("click", async e => {
+	tempoMode = "stereo"
+	stereoDiff = NaN
+	
+	if (stereoInit) return
+	stereoInit = true
+	
 	const context = new AudioContext()
-	const stream = await navigator.mediaDevices.getUserMedia({audio: true, video: false})
-	const source = context.createMediaStreamSource(stream)
-	const processor = context.createScriptProcessor(1024, 1, 1)
-	source.connect(processor)
-	processor.connect(context.destination)
-	processor.onaudioprocess = (e) => {
-		const audioBuffer = e.inputBuffer
-	}
+	const stream = await navigator.mediaDevices.getUserMedia({audio: true})
+	const input = context.createMediaStreamSource(stream)
+	const scriptProcessorNode = context.createScriptProcessor(4096, 1, 1)
+	
+	input.connect(scriptProcessorNode)
+	scriptProcessorNode.connect(context.destination)
+	//input.connect(context.destination)
+	
+	const onAudioProcess = new RealTimeBPMAnalyzer({
+		scriptNode: {
+			bufferSize: 4096,
+			numberOfInputChannels: 1,
+			numberOfOutputChannels: 1,
+		},
+		//computeBPMDelay: 5000,
+		//stabilizationTime: 1000,
+		continuousAnalysis: true,
+		pushTime: 3500,
+		pushCallback(err, bpm, threshold) {
+			if (err) {
+				print("Listening...")
+				tempos.length = 0
+			}
+			if (bpm) {
+				const bpmTempo = bpm[0].tempo
+				//const bpmTempo = average(bpm.map(b => b.tempo))
+				tempos.push(bpmTempo)
+				stereoTempo = average(tempos)
+				print(stereoTempo)
+				stereoDiff = (60 / bpmTempo) / SEQUENCE_LENGTH * 4
+			}
+		},
+		onBpmStabilized(threshold) {
+			onAudioProcess.clearValidPeaks(threshold)
+		},
+	})
+	
+	scriptProcessorNode.onaudioprocess = (e) => onAudioProcess.analyze(e)
 	
 })
 
@@ -142,6 +185,7 @@ let drumDiff = average(diffs)
 const DRUM_RESET_THRESHOLD = 1
 
 drum.addEventListener("mousedown", e => {
+	tempoMode = "drum"
 	const diff = currTime - lastDrumTime
 	lastDrumTime = currTime
 	diffs.push(diff)
@@ -167,13 +211,13 @@ const getDrumDiff = (diffs) => {
 //=========//
 // Display //
 //=========//
+let tempoMode = "drum"
 const ctx = canvas.getContext("2d")
 
 let lastTime = 0
 let currTime = 0
 let fps = 17
 let currFrameNumber = 0
-
 let diffStack = 0
 
 const draw = (time) => {
@@ -183,9 +227,11 @@ const draw = (time) => {
 	lastTime = currTime
 	diffStack += diff
 	
-	while (diffStack > drumDiff) {
+	const activeDiff = tempoMode == "drum"? drumDiff : stereoDiff
+	
+	while (diffStack > activeDiff) {
 		currFrameNumber = wrap(currFrameNumber + 1, SEQUENCE_LENGTH)
-		diffStack -= drumDiff
+		diffStack -= activeDiff
 	}
 	ctx.drawImage(frames[currFrameNumber], 0, 0, canvas.width, canvas.width * ASPECT_RATIO)
 	requestAnimationFrame(draw)
