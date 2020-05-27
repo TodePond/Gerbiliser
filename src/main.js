@@ -104,13 +104,12 @@ stereo.style.bottom = 0
 stereo.style.height = "30%"
 document.body.appendChild(stereo)
 
-/*const player = HTML `<audio id="player" controls></audio>`
+const player = HTML `<audio id="player" controls></audio>`
 player.style.position = "fixed"
-document.body.appendChild(player)*/
+document.body.appendChild(player)
 
 let stereoInit = false
 const tempos = []
-let stereoTempo = undefined
 let stereoDiff = NaN
 
 stereo.addEventListener("click", async e => {
@@ -121,13 +120,21 @@ stereo.addEventListener("click", async e => {
 	stereoInit = true
 	
 	const context = new AudioContext()
-	const stream = await navigator.mediaDevices.getUserMedia({audio: true})
+	const stream = await navigator.mediaDevices.getUserMedia({
+		audio: {
+			autoGainControl: false,
+			channelCount: 2,
+			echoCancellation: false,
+			noiseSuppression: false,
+		}
+	})
 	const input = context.createMediaStreamSource(stream)
 	const scriptProcessorNode = context.createScriptProcessor(4096, 1, 1)
 	
 	input.connect(scriptProcessorNode)
 	scriptProcessorNode.connect(context.destination)
-	//input.connect(context.destination)
+	input.connect(context.destination)
+	player.srcObject = stream
 	
 	const onAudioProcess = new RealTimeBPMAnalyzer({
 		scriptNode: {
@@ -145,11 +152,12 @@ stereo.addEventListener("click", async e => {
 				tempos.length = 0
 			}
 			if (bpm) {
-				const bpmTempo = bpm[0].tempo
+				let bpmTempo = bpm[0].tempo
 				//const bpmTempo = average(bpm.map(b => b.tempo))
-				tempos.push(bpmTempo)
-				stereoTempo = average(tempos)
-				print(stereoTempo)
+				//tempos.push(bpmTempo)
+				//stereoTempo = average(tempos)
+				//print(stereoTempo)
+				print(bpmTempo)
 				stereoDiff = (60 / bpmTempo) / SEQUENCE_LENGTH * 4
 			}
 		},
