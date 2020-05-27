@@ -3,6 +3,7 @@ import {print} from "./Habitat/Console.js"
 import RealTimeBPMAnalyzer from 'realtime-bpm-analyzer';
 import "./Media/Hands.png"
 import "./Media/Stereo.png"
+import "./Media/StereoHit.png"
 import "./Media/Drum.png"
 import "./Media/DrumHit.png"
 import "./Media/BounceImageSequence/BounceSequence0.png"
@@ -119,6 +120,7 @@ stereo.addEventListener("click", async e => {
 	
 	if (stereoInit) return
 	stereoInit = true
+	stereo.src = require("./Media/StereoHit.png")
 	
 	const context = new AudioContext()
 	const stream = await navigator.mediaDevices.getUserMedia({
