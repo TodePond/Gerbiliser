@@ -1,5 +1,5 @@
-const print = console.log.bind(console)
-const dir = console.dir.bind(console)
+export const print = console.log.bind(console)
+export const dir = console.dir.bind(console)
 
 {
 	let i = 0
