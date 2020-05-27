@@ -4,6 +4,7 @@ import RealTimeBPMAnalyzer from 'realtime-bpm-analyzer';
 import "./Media/Hands.png"
 import "./Media/Stereo.png"
 import "./Media/Drum.png"
+import "./Media/DrumHit.png"
 import "./Media/BounceImageSequence/BounceSequence0.png"
 import "./Media/BounceImageSequence/BounceSequence1.png"
 import "./Media/BounceImageSequence/BounceSequence2.png"
@@ -106,7 +107,7 @@ document.body.appendChild(stereo)
 
 const player = HTML `<audio id="player" controls></audio>`
 player.style.position = "fixed"
-document.body.appendChild(player)
+//document.body.appendChild(player)
 
 let stereoInit = false
 const tempos = []
@@ -145,7 +146,7 @@ stereo.addEventListener("click", async e => {
 		//computeBPMDelay: 5000,
 		//stabilizationTime: 1000,
 		continuousAnalysis: true,
-		pushTime: 3500,
+		pushTime: 7000,
 		pushCallback(err, bpm, threshold) {
 			if (err) {
 				print("Listening...")
@@ -189,11 +190,22 @@ const average = (ns) => {
 let lastDrumTime = 0
 const diffs = []
 let drumDiff = average(diffs)
+let drumShimmers = 0
 
-const DRUM_RESET_THRESHOLD = 1
+const DRUM_RESET_THRESHOLD = 2
 
 drum.addEventListener("mousedown", e => {
 	tempoMode = "drum"
+	drumShimmers++
+	drum.src = require("./Media/DrumHit.png")
+	setTimeout(() => {
+		drumShimmers--
+		if (drumShimmers <= 0) {
+			drumShimmers = 0
+			drum.src = require("./Media/Drum.png")
+		}
+	}, 150)
+	
 	const diff = currTime - lastDrumTime
 	lastDrumTime = currTime
 	diffs.push(diff)
