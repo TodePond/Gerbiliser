@@ -1,45 +1,3 @@
-import {HTML} from "./Habitat/Document.js"
-import {print} from "./Habitat/Console.js"
-import RealTimeBPMAnalyzer from 'realtime-bpm-analyzer';
-import "./Media/Hands.png"
-import "./Media/Stereo.png"
-import "./Media/StereoHit.png"
-import "./Media/Drum.png"
-import "./Media/DrumHit.png"
-import "./Media/BounceImageSequence/BounceSequence0.png"
-import "./Media/BounceImageSequence/BounceSequence1.png"
-import "./Media/BounceImageSequence/BounceSequence2.png"
-import "./Media/BounceImageSequence/BounceSequence3.png"
-import "./Media/BounceImageSequence/BounceSequence4.png"
-import "./Media/BounceImageSequence/BounceSequence5.png"
-import "./Media/BounceImageSequence/BounceSequence6.png"
-import "./Media/BounceImageSequence/BounceSequence7.png"
-import "./Media/BounceImageSequence/BounceSequence8.png"
-import "./Media/BounceImageSequence/BounceSequence9.png"
-import "./Media/BounceImageSequence/BounceSequence10.png"
-import "./Media/BounceImageSequence/BounceSequence11.png"
-import "./Media/BounceImageSequence/BounceSequence12.png"
-import "./Media/BounceImageSequence/BounceSequence13.png"
-import "./Media/BounceImageSequence/BounceSequence14.png"
-import "./Media/BounceImageSequence/BounceSequence15.png"
-import "./Media/BounceImageSequence/BounceSequence16.png"
-import "./Media/BounceImageSequence/BounceSequence17.png"
-import "./Media/BounceImageSequence/BounceSequence18.png"
-import "./Media/BounceImageSequence/BounceSequence19.png"
-import "./Media/BounceImageSequence/BounceSequence20.png"
-import "./Media/BounceImageSequence/BounceSequence21.png"
-import "./Media/BounceImageSequence/BounceSequence22.png"
-import "./Media/BounceImageSequence/BounceSequence23.png"
-import "./Media/BounceImageSequence/BounceSequence24.png"
-import "./Media/BounceImageSequence/BounceSequence25.png"
-import "./Media/BounceImageSequence/BounceSequence26.png"
-import "./Media/BounceImageSequence/BounceSequence27.png"
-import "./Media/BounceImageSequence/BounceSequence28.png"
-import "./Media/BounceImageSequence/BounceSequence29.png"
-import "./Media/BounceImageSequence/BounceSequence30.png"
-import "./Media/BounceImageSequence/BounceSequence31.png"
-import "./Media/BounceImageSequence/BounceSequence32.png"
-
 //========//
 // Frames //
 //========//
@@ -50,7 +8,7 @@ const ASPECT_RATIO = IMAGE_HEIGHT / IMAGE_WIDTH
 
 const frames = []
 for (let i = 0; i < SEQUENCE_LENGTH; i++) {
-	const src = require(`./Media/BounceImageSequence/BounceSequence${i}.png`)
+	const src = `./Media/BounceImageSequence/BounceSequence${i}.png`
 	const img = new Image(IMAGE_HEIGHT, IMAGE_WIDTH)
 	img.src = src
 	frames.push(img)
@@ -81,7 +39,7 @@ window.addEventListener("resize", resizeCanvas)
 // Hands //
 //======//
 const hands = new Image()
-hands.src = require("./Media/Hands.png")
+hands.src = "./Media/Hands.png"
 hands.style.position = "fixed"
 hands.style.right = 0
 hands.style.width = "100%"
@@ -99,7 +57,7 @@ window.addEventListener("resize", resizeHands)
 // Stereo //
 //========//
 const stereo = new Image()
-stereo.src = require("./Media/Stereo.png")
+stereo.src = "./Media/Stereo.png"
 stereo.style.position = "fixed"
 stereo.style.left = 0
 stereo.style.bottom = 0
@@ -120,7 +78,7 @@ stereo.addEventListener("click", async e => {
 	
 	if (stereoInit) return
 	stereoInit = true
-	stereo.src = require("./Media/StereoHit.png")
+	stereo.src = "./Media/StereoHit.png"
 	
 	const context = new AudioContext()
 	const stream = await navigator.mediaDevices.getUserMedia({
@@ -139,7 +97,7 @@ stereo.addEventListener("click", async e => {
 	input.connect(context.destination)
 	player.srcObject = stream
 	
-	const onAudioProcess = new RealTimeBPMAnalyzer({
+	/*const onAudioProcess = new RealTimeBPMAnalyzer({
 		scriptNode: {
 			bufferSize: 4096,
 			numberOfInputChannels: 1,
@@ -169,7 +127,7 @@ stereo.addEventListener("click", async e => {
 		},
 	})
 	
-	scriptProcessorNode.onaudioprocess = (e) => onAudioProcess.analyze(e)
+	scriptProcessorNode.onaudioprocess = (e) => onAudioProcess.analyze(e)*/
 	
 })
 
@@ -177,7 +135,7 @@ stereo.addEventListener("click", async e => {
 // Drum //
 //======//
 const drum = new Image()
-drum.src = require("./Media/Drum.png")
+drum.src = "./Media/Drum.png"
 drum.style.position = "fixed"
 drum.style.right = 0
 drum.style.bottom = 0
@@ -199,12 +157,12 @@ const DRUM_RESET_THRESHOLD = 2
 drum.addEventListener("mousedown", e => {
 	tempoMode = "drum"
 	drumShimmers++
-	drum.src = require("./Media/DrumHit.png")
+	drum.src = "./Media/DrumHit.png"
 	setTimeout(() => {
 		drumShimmers--
 		if (drumShimmers <= 0) {
 			drumShimmers = 0
-			drum.src = require("./Media/Drum.png")
+			drum.src = "./Media/Drum.png"
 		}
 	}, 150)
 	
