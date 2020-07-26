@@ -25,11 +25,29 @@ canvas.style.top = 0
 canvas.style.left = 0
 canvas.style["background-color"] = "black"
 
+let imageDrawWidth = IMAGE_WIDTH
+let imageDrawHeight = IMAGE_HEIGHT
+let imageDrawX = 0
+
 const resizeCanvas = () => {
 	canvas.width = window.innerWidth
 	canvas.height = window.innerHeight
 	canvas.style.width = window.innerWidth + "px"
 	canvas.style.height = window.innerHeight + "px"
+	
+	const widthRatio = canvas.width / IMAGE_WIDTH 
+	const heightRatio = canvas.height / IMAGE_HEIGHT
+	
+	if (widthRatio > heightRatio) {
+		imageDrawWidth = canvas.width
+		imageDrawHeight = canvas.width * ASPECT_RATIO
+	} else {
+		imageDrawHeight = canvas.height
+		imageDrawWidth = canvas.height / ASPECT_RATIO
+	}
+	
+	imageDrawX = canvas.width/2 - imageDrawWidth/2
+	imageDrawY = canvas.height/2 - imageDrawHeight/2
 }
 
 resizeCanvas()
@@ -38,7 +56,7 @@ window.addEventListener("resize", resizeCanvas)
 //======//
 // Hands //
 //======//
-const hands = new Image()
+/*const hands = new Image()
 hands.src = "./Media/Hands.png"
 hands.style.position = "fixed"
 hands.style.right = 0
@@ -51,7 +69,7 @@ const resizeHands = () => {
 }
 
 resizeHands()
-window.addEventListener("resize", resizeHands)
+window.addEventListener("resize", resizeHands)*/
 
 //========//
 // Stereo //
@@ -64,9 +82,9 @@ stereo.style.bottom = 0
 stereo.style.height = "30%"
 document.body.appendChild(stereo)
 
-const player = HTML `<audio id="player" controls></audio>`
+/*const player = HTML `<audio id="player" controls></audio>`
 player.style.position = "fixed"
-//document.body.appendChild(player)
+//document.body.appendChild(player)*/
 
 let stereoInit = false
 const tempos = []
@@ -95,7 +113,7 @@ stereo.addEventListener("click", async e => {
 	input.connect(scriptProcessorNode)
 	scriptProcessorNode.connect(context.destination)
 	input.connect(context.destination)
-	player.srcObject = stream
+	/*player.srcObject = stream*/
 	
 	/*const onAudioProcess = new RealTimeBPMAnalyzer({
 		scriptNode: {
@@ -134,13 +152,22 @@ stereo.addEventListener("click", async e => {
 //======//
 // Drum //
 //======//
-const drum = new Image()
+/*const drum = new Image()
 drum.src = "./Media/Drum.png"
 drum.style.position = "fixed"
 drum.style.right = 0
 drum.style.bottom = 0
 drum.style.height = "30%"
 document.body.appendChild(drum)
+
+const drumHit = new Image()
+drumHit.src = "./Media/DrumHit.png"
+drumHit.style.position = "fixed"
+drumHit.style.right = 0
+drumHit.style.bottom = 0
+drumHit.style.height = "30%"
+drumHit.style.visibility = "hidden"
+document.body.appendChild(drumHit)*/
 
 const average = (ns) => {
 	const total = ns.reduce((a, b) => a + b, 0)
@@ -154,25 +181,15 @@ let drumShimmers = 0
 
 const DRUM_RESET_THRESHOLD = 2
 
-drum.addEventListener("mousedown", e => {
-	tempoMode = "drum"
-	drumShimmers++
-	drum.src = "./Media/DrumHit.png"
-	setTimeout(() => {
-		drumShimmers--
-		if (drumShimmers <= 0) {
-			drumShimmers = 0
-			drum.src = "./Media/Drum.png"
-		}
-	}, 150)
-	
+canvas.on.mousedown(e => {
+	tempoMode = "drum"	
 	const diff = currTime - lastDrumTime
 	lastDrumTime = currTime
 	diffs.push(diff)
 	if (diff > DRUM_RESET_THRESHOLD) {
 		diffs.length = 0
+		currFrameNumber = 7
 	}
-	currFrameNumber = 7
 	diffStack = 0
 	drumDiff = getDrumDiff(diffs) / SEQUENCE_LENGTH * 4
 })
@@ -213,7 +230,7 @@ const draw = (time) => {
 		currFrameNumber = wrap(currFrameNumber + 1, SEQUENCE_LENGTH)
 		diffStack -= activeDiff
 	}
-	ctx.drawImage(frames[currFrameNumber], 0, 0, canvas.width, canvas.width * ASPECT_RATIO)
+	ctx.drawImage(frames[currFrameNumber], imageDrawX, imageDrawY, imageDrawWidth, imageDrawHeight)
 	requestAnimationFrame(draw)
 }
 
