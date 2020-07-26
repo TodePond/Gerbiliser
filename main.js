@@ -90,15 +90,15 @@ let stereoInit = false
 let stereoDiff = NaN
 
 const bd = new BeatDetektor(85, 169, {
-	BD_DETECTION_RANGES : 256,  // How many ranges to quantize the FFT into
+	BD_DETECTION_RANGES : 128,  // How many ranges to quantize the FFT into
 	BD_DETECTION_RATE : 12.0,   // Rate in 1.0 / BD_DETECTION_RATE seconds
 	BD_DETECTION_FACTOR : 0.915, // Trigger ratio
 	BD_QUALITY_DECAY : 0.6,     // range and contest decay
-	BD_QUALITY_TOLERANCE : 0.98,// Use the top x % of contest results
+	BD_QUALITY_TOLERANCE : 0.96,// Use the top x % of contest results
 	BD_QUALITY_REWARD : 10.0,    // Award weight
 	BD_QUALITY_STEP : 0.1,     // Award step (roaming speed)
 	BD_MINIMUM_CONTRIBUTIONS : 6,   // At least x ranges must agree to process a result
-	BD_FINISH_LINE : 60.0,          // Contest values wil be normalized to this finish line
+	BD_FINISH_LINE : 0.0,          // Contest values wil be normalized to this finish line
 	// this is the 'funnel' that pulls ranges in / out of alignment based on trigger detection
 	BD_REWARD_TOLERANCES : [ 0.001, 0.005, 0.01, 0.02, 0.04, 0.08, 0.10, 0.15, 0.30 ],  // .1%, .5%, 1%, 2%, 4%, 8%, 10%, 15%
 	BD_REWARD_MULTIPLIERS : [ 20.0, 10.0, 8.0, 1.0, 1.0/2.0, 1.0/4.0, 1.0/8.0, 1/16.0, 1/32.0 ]
@@ -138,7 +138,7 @@ stereo.addEventListener("click", async e => {
 		bd.process(seconds, buffer)
 		const bpm = 60 / bd.winning_bpm
 		print(`BPM: ${bpm}`)
-		if (bpm !== Infinity) stereoDiff = (60 / bpm) / SEQUENCE_LENGTH * 4
+		if (bpm !== Infinity) stereoDiff = ((60 / bpm) / SEQUENCE_LENGTH) * 4
 		requestAnimationFrame(analyse)
 	}
 	
@@ -223,6 +223,9 @@ const draw = (time) => {
 	requestAnimationFrame(draw)
 }
 
-const wrap = (n, max) => n % max
+const wrap = (n, max) => {
+	if (n < max) return n
+	return wrap(n - max, max)
+}	
 
 requestAnimationFrame(draw)
