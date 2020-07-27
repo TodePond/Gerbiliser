@@ -98,7 +98,7 @@ const bd = new BeatDetektor(85, 169, {
 	BD_QUALITY_REWARD : 10.0,    // Award weight
 	BD_QUALITY_STEP : 0.1,     // Award step (roaming speed)
 	BD_MINIMUM_CONTRIBUTIONS : 6,   // At least x ranges must agree to process a result
-	BD_FINISH_LINE : 0.0,          // Contest values wil be normalized to this finish line
+	BD_FINISH_LINE : 25.0,          // Contest values wil be normalized to this finish line
 	// this is the 'funnel' that pulls ranges in / out of alignment based on trigger detection
 	BD_REWARD_TOLERANCES : [ 0.001, 0.005, 0.01, 0.02, 0.04, 0.08, 0.10, 0.15, 0.30 ],  // .1%, .5%, 1%, 2%, 4%, 8%, 10%, 15%
 	BD_REWARD_MULTIPLIERS : [ 20.0, 10.0, 8.0, 1.0, 1.0/2.0, 1.0/4.0, 1.0/8.0, 1/16.0, 1/32.0 ]
