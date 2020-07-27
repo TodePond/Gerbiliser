@@ -246,7 +246,6 @@ BeatDetektor.prototype.process = function(timer_seconds, fft_data)
 	var range_step = (fft_data.length / this.config.BD_DETECTION_RANGES);
 	var range = 0;
 	
-		
 	for (x=0; x<fft_data.length; x+=range_step)
 	{
 		this.a_freq_range[range] = 0;
@@ -565,6 +564,7 @@ BeatDetektor.prototype.process = function(timer_seconds, fft_data)
 		{
 			this.win_bpm_int = parseInt(winner);
 			this.winning_bpm = (60.0/(winner/10.0));
+			bpm = (this.win_bpm_int / 10.0)
 		}
 		
 		// find the overall winner so far
@@ -582,7 +582,6 @@ BeatDetektor.prototype.process = function(timer_seconds, fft_data)
 			this.win_bpm_int_lo = parseInt(winner_lo);
 			this.winning_bpm_lo = 60.0/winner_lo;
 		}
-		
 		
 		//if (typeof(console)!='undefined' && (this.beat_counter % 4) == 0) console.log("BeatDetektor("+this.BPM_MIN+","+this.BPM_MAX+"): [ Current Estimate: "+(winner/10)+" BPM ] [ Time: "+(parseInt(timer_seconds*1000.0)/1000.0)+"s, Quality: "+(parseInt(this.quality_total*1000.0)/1000.0)+", Rank: "+(parseInt(this.win_val*1000.0)/1000.0)+", Jitter: "+(parseInt(this.bpm_offset*1000000.0)/1000000.0)+" ]");
 	}

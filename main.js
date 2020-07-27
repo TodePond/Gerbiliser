@@ -25,9 +25,8 @@ canvas.style.top = 0
 canvas.style.left = 0
 canvas.style["background-color"] = "black"
 
-let imageDrawWidth = IMAGE_WIDTH
-let imageDrawHeight = IMAGE_HEIGHT
-let imageDrawX = 0
+let widthRatio
+let heightRatio
 
 const resizeCanvas = () => {
 	canvas.width = window.innerWidth
@@ -35,19 +34,9 @@ const resizeCanvas = () => {
 	canvas.style.width = window.innerWidth + "px"
 	canvas.style.height = window.innerHeight + "px"
 	
-	const widthRatio = canvas.width / IMAGE_WIDTH 
-	const heightRatio = canvas.height / IMAGE_HEIGHT
+	widthRatio = canvas.width / IMAGE_WIDTH 
+	heightRatio = canvas.height / IMAGE_HEIGHT
 	
-	if (widthRatio > heightRatio) {
-		imageDrawWidth = canvas.width
-		imageDrawHeight = canvas.width * ASPECT_RATIO
-	} else {
-		imageDrawHeight = canvas.height
-		imageDrawWidth = canvas.height / ASPECT_RATIO
-	}
-	
-	imageDrawX = canvas.width/2 - imageDrawWidth/2
-	imageDrawY = canvas.height/2 - imageDrawHeight/2
 }
 
 resizeCanvas()
@@ -80,7 +69,7 @@ stereo.style.position = "fixed"
 stereo.style.left = 0
 stereo.style.bottom = 0
 stereo.style.height = "30%"
-document.body.appendChild(stereo)
+//document.body.appendChild(stereo)
 
 /*const player = HTML `<audio id="player" controls></audio>`
 player.style.position = "fixed"
@@ -90,7 +79,7 @@ let stereoInit = false
 let stereoDiff = NaN
 
 const bd = new BeatDetektor(85, 169, {
-	BD_DETECTION_RANGES : 128,  // How many ranges to quantize the FFT into
+	BD_DETECTION_RANGES : 1024,  // How many ranges to quantize the FFT into
 	BD_DETECTION_RATE : 12.0,   // Rate in 1.0 / BD_DETECTION_RATE seconds
 	BD_DETECTION_FACTOR : 0.915, // Trigger ratio
 	BD_QUALITY_DECAY : 0.6,     // range and contest decay
@@ -98,13 +87,14 @@ const bd = new BeatDetektor(85, 169, {
 	BD_QUALITY_REWARD : 10.0,    // Award weight
 	BD_QUALITY_STEP : 0.1,     // Award step (roaming speed)
 	BD_MINIMUM_CONTRIBUTIONS : 6,   // At least x ranges must agree to process a result
-	BD_FINISH_LINE : 25.0,          // Contest values wil be normalized to this finish line
+	BD_FINISH_LINE : 60.0,          // Contest values wil be normalized to this finish line
 	// this is the 'funnel' that pulls ranges in / out of alignment based on trigger detection
-	BD_REWARD_TOLERANCES : [ 0.001, 0.005, 0.01, 0.02, 0.04, 0.08, 0.10, 0.15, 0.30 ],  // .1%, .5%, 1%, 2%, 4%, 8%, 10%, 15%
-	BD_REWARD_MULTIPLIERS : [ 20.0, 10.0, 8.0, 1.0, 1.0/2.0, 1.0/4.0, 1.0/8.0, 1/16.0, 1/32.0 ]
+	BD_REWARD_TOLERANCES : [ 0.002, 0.003, 0.005, 0.01, 0.02, 0.04, 0.08, 0.10],  // .1%, .5%, 1%, 2%, 4%, 8%, 10%, 15%
+	BD_REWARD_MULTIPLIERS : [ 20.0, 15.0, 10.0, 8.0, 1.0, 1.0/2.0, 1.0/4.0, 1.0/8.0]
 })
-	
-stereo.addEventListener("click", async e => {
+
+bpm = 0
+const initStereo = async () => {
 	tempoMode = "stereo"
 	stereoDiff = NaN
 	
@@ -136,8 +126,8 @@ stereo.addEventListener("click", async e => {
 		const seconds = time / 1000
 		analyser.getFloatTimeDomainData(buffer)
 		bd.process(seconds, buffer)
-		const bpm = 60 / bd.winning_bpm
-		print(`BPM: ${bpm}`)
+		const score = bd.win_val
+		print(`BPM: ${parseInt(bpm)}, SCORE: ${(score.as(Int))}`)
 		if (bpm !== Infinity) stereoDiff = ((60 / bpm) / SEQUENCE_LENGTH) * 4
 		requestAnimationFrame(analyse)
 	}
@@ -153,7 +143,10 @@ stereo.addEventListener("click", async e => {
 	// 6. DO STUFF	
 	requestAnimationFrame(analyse)
 	
-})
+}
+
+canvas.addEventListener("click", initStereo)
+//requestAnimationFrame(initStereo)
 
 //======//
 // Drum //
@@ -170,7 +163,7 @@ let drumShimmers = 0
 
 const DRUM_RESET_THRESHOLD = 2
 
-canvas.on.mousedown(e => {
+/*canvas.on.mousedown(e => {
 	tempoMode = "drum"	
 	const diff = currTime - lastDrumTime
 	lastDrumTime = currTime
@@ -181,7 +174,7 @@ canvas.on.mousedown(e => {
 	}
 	diffStack = 0
 	drumDiff = getDrumDiff(diffs) / SEQUENCE_LENGTH * 4
-})
+})*/
 
 const getDrumDiff = (diffs) => {
 	if (diffs.length === 0) return undefined
@@ -219,6 +212,24 @@ const draw = (time) => {
 		currFrameNumber = wrap(currFrameNumber + 1, SEQUENCE_LENGTH)
 		diffStack -= activeDiff
 	}
+	
+	const scale = (bd.win_val / 30)
+	
+	let imageDrawWidth = IMAGE_WIDTH
+	let imageDrawHeight = IMAGE_HEIGHT
+	if (widthRatio > heightRatio) {
+		imageDrawWidth = canvas.width
+		imageDrawHeight = canvas.width * ASPECT_RATIO
+	} else {
+		imageDrawHeight = canvas.height
+		imageDrawWidth = canvas.height / ASPECT_RATIO
+	}
+	
+	//imageDrawWidth *= scale
+	//imageDrawHeight *= scale
+	
+	const imageDrawX = canvas.width/2 - imageDrawWidth/2
+	const imageDrawY = canvas.height/2 - imageDrawHeight/2
 	ctx.drawImage(frames[currFrameNumber], imageDrawX, imageDrawY, imageDrawWidth, imageDrawHeight)
 	requestAnimationFrame(draw)
 }
