@@ -1,14 +1,46 @@
 //========//
 // Frames //
 //========//
-const SEQUENCE_LENGTH = 33
-const IMAGE_WIDTH = 1920
-const IMAGE_HEIGHT = 1080
+const urlParams = new URLSearchParams(window.location.search)
+
+const ANIMATION_ID = urlParams.get("a") | 0
+print(ANIMATION_ID)
+
+const ANIMATIONS = [
+	{
+		SRC: `BounceSequence`,
+		IMAGE_WIDTH: 1920,
+		IMAGE_HEIGHT: 1080,
+		SEQUENCE_LENGTH: 33,
+		BEATS_PER_SEQUENCE: 4,
+	},
+	{
+		SRC: `Bat Anim`,
+		IMAGE_WIDTH: 1420,
+		IMAGE_HEIGHT: 964,
+		SEQUENCE_LENGTH: 26,
+		BEATS_PER_SEQUENCE: 4,
+	},
+]
+
+const ANIMATION = ANIMATIONS[ANIMATION_ID]
+if (ANIMATION === undefined) throw new Error(`\n\n[Gerbiliser] Unrecognised animation id: '${ANIMATION_ID}'`)
+
+const throwParamError = (param) => { throw new Error(`\n\n[Gerbiliser] Could not find ${param} for animation id: '${ANIMATION_ID}'`) }
+
+const {
+	SEQUENCE_LENGTH = throwParamError("SEQUENCE_LENGTH"),
+	IMAGE_WIDTH = throwParamError("IMAGE_WIDTH"),
+	IMAGE_HEIGHT = throwParamError("IMAGE_HEIGHT"),
+	SRC = throwParamError("SRC"),
+	BEATS_PER_SEQUENCE = throwParamError("BEATS_PER_SEQUENCE"),
+} = ANIMATION
+
 const ASPECT_RATIO = IMAGE_HEIGHT / IMAGE_WIDTH
 
 const frames = []
 for (let i = 0; i < SEQUENCE_LENGTH; i++) {
-	const src = `./Media/BounceImageSequence/BounceSequence${i}.png`
+	const src = `./Media/${SRC}/${SRC}${i}.png`
 	const img = new Image(IMAGE_HEIGHT, IMAGE_WIDTH)
 	img.src = src
 	frames.push(img)
@@ -80,14 +112,14 @@ let stereoDiff = NaN
 
 const bd = new BeatDetektor(85, 169, {
 	BD_DETECTION_RANGES : 1024,  // How many ranges to quantize the FFT into
-	BD_DETECTION_RATE : 12.0,   // Rate in 1.0 / BD_DETECTION_RATE seconds
-	BD_DETECTION_FACTOR : 0.915, // Trigger ratio
+	BD_DETECTION_RATE : 6.0,   // Rate in 1.0 / BD_DETECTION_RATE seconds
+	BD_DETECTION_FACTOR : 1.0, // Trigger ratio
 	BD_QUALITY_DECAY : 0.6,     // range and contest decay
 	BD_QUALITY_TOLERANCE : 0.96,// Use the top x % of contest results
 	BD_QUALITY_REWARD : 10.0,    // Award weight
 	BD_QUALITY_STEP : 0.1,     // Award step (roaming speed)
 	BD_MINIMUM_CONTRIBUTIONS : 6,   // At least x ranges must agree to process a result
-	BD_FINISH_LINE : 60.0,          // Contest values wil be normalized to this finish line
+	BD_FINISH_LINE : 40.0,          // Contest values wil be normalized to this finish line
 	// this is the 'funnel' that pulls ranges in / out of alignment based on trigger detection
 	BD_REWARD_TOLERANCES : [ 0.002, 0.003, 0.005, 0.01, 0.02, 0.04, 0.08, 0.10],  // .1%, .5%, 1%, 2%, 4%, 8%, 10%, 15%
 	BD_REWARD_MULTIPLIERS : [ 20.0, 15.0, 10.0, 8.0, 1.0, 1.0/2.0, 1.0/4.0, 1.0/8.0]
@@ -128,7 +160,7 @@ const initStereo = async () => {
 		bd.process(seconds, buffer)
 		const score = bd.win_val
 		print(`BPM: ${parseInt(bpm)}, SCORE: ${(score.as(Int))}`)
-		if (bpm !== Infinity) stereoDiff = ((60 / bpm) / SEQUENCE_LENGTH) * 4
+		if (bpm !== Infinity) stereoDiff = ((60 / bpm) / SEQUENCE_LENGTH) * BEATS_PER_SEQUENCE
 		requestAnimationFrame(analyse)
 	}
 	
